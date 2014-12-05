@@ -1,0 +1,4 @@
+#!/usr/bin/env ruby
+require 'twelite/pit_stop'
+
+PitStop.new(ARGV.first).run
