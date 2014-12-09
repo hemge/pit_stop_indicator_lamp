@@ -51,7 +51,7 @@ TWE-Lite DIP で玄関とお風呂場の無線ドア開閉センサ作った。<
 <a href="https://twitter.com/ksasao/status/515844971136425985">
 https://twitter.com/ksasao/status/515844971136425985</a>
 </dd>
-<dl>
+</dl>
 
 ### 方針を決めよう
 
