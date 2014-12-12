@@ -1,13 +1,22 @@
 require "serialport"
 
 class TweLite
-  def initialize(port)
+  def initialize(port, logfile)
     @port = port
+    @logfile = logfile
   end
   def run
     SerialPort.open(@port, 115200, 8, 1, SerialPort::NONE) do |serial|
-      serial.gets
-      yield serial
+      File.open(@logfile, "a") do |log|
+        Signal.trap(:HUP) do
+          log.reopen(@logfile, "a")
+        end
+        @log = log
+        serial.gets
+        yield serial
+        @log = nil
+        Signal.trap(:HUP, "DEFAULT")
+      end
     end
   end
   def get(line)
@@ -49,6 +58,14 @@ class TweLite
       end
     end
     serial.write ":788001%04X0000000000000000X\r\n" % bits
+  end
+  def log(str = nil)
+    if str
+      @log.puts str
+      @log.flush
+    else
+      @log
+    end
   end
 end
 

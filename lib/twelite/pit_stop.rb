@@ -5,7 +5,7 @@ class PitStop < TweLite
   ALERT_SEC = 20
   DEV_NULL = File.exist?("/dev/null") ? "/dev/null" : "NUL"
 
-  def initialize(port)
+  def initialize(port, logfile)
     super
     @blink = File.exist?(BLINK_CMD) && "--off"
   end
@@ -28,7 +28,7 @@ class PitStop < TweLite
     end
     return if blink == @blink
     @blink = blink
-    system(BLINK_CMD, @blink, "-m", "100")
+    system(BLINK_CMD, @blink, "-m", "100", out: log)
   end
 
   def run
@@ -41,11 +41,11 @@ class PitStop < TweLite
         data = get(serial.gets)
 
         if data[:digital][2]
-          puts "Sensor"
+          log "Sensor"
           @light = data[:analog][0] < 0x7f
           update_alert(now)
         else
-          puts "LED"
+          log "LED"
           blink
           if @light != data[:digital][0]
             put(serial, d1: @light)
@@ -59,8 +59,9 @@ class PitStop < TweLite
           @light = (@alert_count / 2) % 2 == 0
         end
 
-        p now, data
-        puts ""
+        log now.inspect
+        log data.inspect
+        log ""
       end
     end
 
