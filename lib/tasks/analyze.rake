@@ -1,17 +1,25 @@
 require 'time'
+require 'zlib'
 
-desc "show analyze result [file=\"log/data.log\", w=80, h=20]"
+desc "show analyze result [dir=\"log/\", w=80, h=20]"
 task :analyze do
   w = (ENV["w"] || 80).to_i
   h = (ENV["h"] || 20).to_i
-  file = ENV["file"] || "log/data.log"
+  dir = ENV["dir"] || "log/"
 
   ary = []
   first = last = nil
-  File.read(file).scan(/Sensor\n(.*)\n.+power_mv=>(\d+)/) do |time, mv|
-    first ||= time
-    last = time
-    ary << mv.to_i
+  Dir.glob("log/*.log*").sort_by{|file| File.mtime(file)}.each do |file|
+    if file =~ /\.gz$/
+      buf = Zlib::GzipReader.open(file, &:read)
+    else
+      buf = File.read(file)
+    end
+    buf.scan(/Sensor\n(.*)\n.+power_mv=>(\d+)/) do |time, mv|
+      first ||= time
+      last = time
+      ary << mv.to_i
+    end
   end
 
   block = ary.size / w
