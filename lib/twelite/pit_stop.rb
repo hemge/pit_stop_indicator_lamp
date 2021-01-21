@@ -11,7 +11,7 @@ class PitStop < TweLite
   end
   def update_alert(now)
     @alert_at = now + ALERT_SEC
-    blink if @alert
+    blink
     @alert_count = nil
   end
 
@@ -38,18 +38,23 @@ class PitStop < TweLite
     super do |serial|
       loop do
         now = Time.now
-        data = get(serial.gets)
+        line = serial.gets
 
-        if data[:digital][2]
-          log "Sensor"
-          @light = data[:analog][0] < 0x7f
-          update_alert(now)
-        else
-          log "LED"
-          blink
-          if @light != data[:digital][0]
-            put(serial, d1: @light)
+        if line
+          data = get(line)
+          if data[:digital][2]
+            log "Sensor"
+            @light = data[:analog][0] < 0x7f
+            update_alert(now)
+          else
+            log "LED"
+            blink
+            if @light != data[:digital][0]
+              put(serial, d1: @light)
+            end
           end
+        else
+          blink
         end
 
         alert_offset = Time.now - @alert_at
@@ -60,7 +65,7 @@ class PitStop < TweLite
         end
 
         log now.inspect
-        log data.inspect
+        log data.inspect if data
         log ""
       end
     end

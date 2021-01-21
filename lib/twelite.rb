@@ -12,6 +12,7 @@ class TweLite
           log.reopen(@logfile, "a")
         end
         @log = log
+        serial.read_timeout = 1000
         serial.gets
         yield serial
         @log = nil
@@ -45,6 +46,8 @@ class TweLite
       analog: [data[18], data[19], data[20], data[21]],
       correct: data[22],
     }
+  rescue
+    return nil
   end
   def put(serial, **data)
     bits = 0
